@@ -13,3 +13,6 @@
 [submodule "invoice-ms"]
 	path = invoice-ms
 	url = https://github.com/FerrCosto/invoice-ms.git
+[submodule "auth-ms"]
+	path = auth-ms
+	url = https://github.com/FerrCosto/auth-ms.git
