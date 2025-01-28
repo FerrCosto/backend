@@ -1,21 +1,18 @@
 [submodule "products-ms"]
 	path = products-ms
-	url = https://github.com/FERRETERIAMS/products-ms.git
-[submodule "auth-ms"]
-	path = auth-ms
-	url = https://github.com/FERRETERIAMS/auth-ms.git
+	url = https://github.com/FerrCosto/products-ms.git
 [submodule "cliente-gateway"]
 	path = cliente-gateway
 	url = https://github.com/FERRETERIAMS/client-gateway.git
 [submodule "client-gateway"]
 	path = client-gateway
-	url = https://github.com/FERRETERIAMS/client-gateway.git
+	url = https://github.com/FerrCosto/client-gateway.git
 [submodule "orders-ms"]
 	path = orders-ms
-	url = https://github.com/FERRETERIAMS/orders-ms.git
+	url = https://github.com/FerrCosto/orders-ms.git
 [submodule "payments-ms"]
 	path = payments-ms
-	url = https://github.com/FERRETERIAMS/payments-ms.git
+	url = https://github.com/FerrCosto/payments-ms.git
 [submodule "invoice-ms"]
 	path = invoice-ms
-	url = https://github.com/FERRETERIAMS/facturas-ms.git
+	url = https://github.com/FerrCosto/invoice-ms.git
