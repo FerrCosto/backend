@@ -1,9 +1,6 @@
 [submodule "products-ms"]
 	path = products-ms
 	url = https://github.com/FerrCosto/products-ms.git
-[submodule "cliente-gateway"]
-	path = cliente-gateway
-	url = https://github.com/FERRETERIAMS/client-gateway.git
 [submodule "client-gateway"]
 	path = client-gateway
 	url = https://github.com/FerrCosto/client-gateway.git
