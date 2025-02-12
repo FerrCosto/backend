@@ -1,4 +1,3 @@
-version: "3"
 services:
   nats-service:
     image: nats:latest
@@ -18,8 +17,8 @@ services:
       - NATS_SERVICE=nats://nats-service:4222
 
   auth-ms:
-    # depends_on:
-    #   - auth-db
+    depends_on:
+      - auth-db
     build:
       context: ./auth-ms
       dockerfile: dockerfile
@@ -28,8 +27,6 @@ services:
     environment:
       - PORT=3001
       - NATS_SERVICE=nats://nats-service:4222
-      - MONGO_USERNAME=${MONGO_USERNAME}
-      - MONGO_PASSWORD=${MONGO_PASSWORD}
       - DATABASE_URL=${DATABASE_URL_AUTH}
       - JWTSECRET=${JWTSECRET}
 
@@ -84,6 +81,19 @@ services:
       - PORT=3005
       - NATS_SERVICE=nats://nats-service:4222
 
+  users-ms:
+    depends_on:
+      - users-db
+    build:
+      context: ./users-ms
+      dockerfile: dockerfile
+    volumes:
+      - ./users-ms/src:/usr/src/app/src
+    environment:
+      - PORT=3006
+      - NATS_SERVICE=nats://nats-service:4222
+      - DATABASE_URL=${DATABASE_URL_USERS}
+
   products-db:
     container_name: "products-base"
     image: postgres:16.3
@@ -110,17 +120,27 @@ services:
       - POSTGRES_DB=ordersms
       - POSTGRES_PASSWORD=admin123
 
-  # auth-db:
-  #   image: mongo:latest
-  #   restart: always
-  #   container_name: auth-ms
-  #   ports:
-  #     - "27017:27017"
-  #   environment:
-  #     - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
-  #     - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
-  #   volumes:
-  #     - ./auth-ms/mongo:/data/db
+  auth-db:
+    image: mongo:6
+    restart: always
+    container_name: auth-base
+    ports:
+      - "27017:27017"
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    volumes:
+      - ./auth-ms/mongo:/data/db
+
+  users-db:
+    image: mysql:8.4
+    container_name: users-base
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: user-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./users-ms/mysql:/var/lib/mysql"
 
   pgAdmin:
     depends_on:
@@ -132,6 +152,14 @@ services:
     ports:
       - "8080:80"
     environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@salamanx.com
+      - PGADMIN_DEFAULT_EMAIL=admin@mysql.com
       - PGADMIN_DEFAULT_PASSWORD=admin123
     restart: always
+
+  adminer:
+    depends_on:
+      - users-db
+    image: adminer
+    restart: always
+    ports:
+      - "8085:8080"

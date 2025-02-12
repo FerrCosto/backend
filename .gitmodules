@@ -16,3 +16,6 @@
 [submodule "auth-ms"]
 	url = https://github.com/FerrCosto/auth-ms.git
 	path = auth-ms
+[submodule "users-ms"]
+	path = users-ms
+	url = https://github.com/FerrCosto/users-ms.git
