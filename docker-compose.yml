@@ -120,46 +120,40 @@ services:
       - POSTGRES_DB=ordersms
       - POSTGRES_PASSWORD=admin123
 
-  auth-db:
-    image: mongo:6
+  users-db:
+    container_name: "users-base"
+    image: postgres:16.3
+    ports:
+      - "5434:5432"
     restart: always
-    container_name: auth-base
+    volumes:
+      - ./users-ms/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=administrador
+      - POSTGRES_DB=usersms
+      - POSTGRES_PASSWORD=admin123
+
+  auth-db:
+    image: mongo
+    container_name: auth-db
+    restart: always
+    command: ["--replSet", "rs0"]
     ports:
       - "27017:27017"
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - ./auth-ms/mongo:/data/db
 
-  users-db:
-    image: mysql:8.4
-    container_name: users-base
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: admin
-      MYSQL_DATABASE: user-db
-    ports:
-      - "3306:3306"
-    volumes:
-      - "./users-ms/mysql:/var/lib/mysql"
-
   pgAdmin:
     depends_on:
+      - users-db
       - products-db
       - orders-db
     image: dpage/pgadmin4:8.6
     volumes:
-      - ./products-ms/pgadmin:/var/lib/pgadmin
+      - ./pgadmin:/var/lib/pgadmin
     ports:
       - "8080:80"
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@mysql.com
       - PGADMIN_DEFAULT_PASSWORD=admin123
     restart: always
-
-  adminer:
-    depends_on:
-      - users-db
-    image: adminer
-    restart: always
-    ports:
-      - "8085:8080"
