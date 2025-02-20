@@ -3,6 +3,8 @@ services:
     image: nats:latest
     ports:
       - "8222:8222"
+    networks:
+      - ferrCostos
 
   client-gateway:
     build:
@@ -15,10 +17,10 @@ services:
     environment:
       - PORT=3000
       - NATS_SERVICE=nats://nats-service:4222
+    networks:
+      - ferrCostos
 
   auth-ms:
-    depends_on:
-      - auth-db
     build:
       context: ./auth-ms
       dockerfile: dockerfile
@@ -27,8 +29,9 @@ services:
     environment:
       - PORT=3001
       - NATS_SERVICE=nats://nats-service:4222
-      - DATABASE_URL=${DATABASE_URL_AUTH}
       - JWTSECRET=${JWTSECRET}
+    networks:
+      - ferrCostos
 
   products-ms:
     depends_on:
@@ -42,6 +45,8 @@ services:
       - PORT=3002
       - DATABASE_URL=${DATABASE_URL_PRODUCTS}
       - NATS_SERVICE=nats://nats-service:4222
+    networks:
+      - ferrCostos
 
   orders-ms:
     depends_on:
@@ -54,6 +59,8 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL_ORDERS}
       - NATS_SERVICE=nats://nats-service:4222
+    networks:
+      - ferrCostos
 
   payments-ms:
     build:
@@ -70,6 +77,8 @@ services:
       - STRIPE_SUCCESS_URL=${STRIPE_SUCCESS_URL}
       - STRIPE_CANCEL_URL=${STRIPE_CANCEL_URL}
       - WEBHOOK_STRIPE=${WEBHOOK_STRIPE}
+    networks:
+      - ferrCostos
 
   invoice-ms:
     build:
@@ -80,10 +89,12 @@ services:
     environment:
       - PORT=3005
       - NATS_SERVICE=nats://nats-service:4222
+    networks:
+      - ferrCostos
 
   users-ms:
     depends_on:
-      - users-db
+      - auth-db
     build:
       context: ./users-ms
       dockerfile: dockerfile
@@ -93,6 +104,8 @@ services:
       - PORT=3006
       - NATS_SERVICE=nats://nats-service:4222
       - DATABASE_URL=${DATABASE_URL_USERS}
+    networks:
+      - ferrCostos
 
   products-db:
     container_name: "products-base"
@@ -101,11 +114,13 @@ services:
       - "5432:5432"
     restart: always
     volumes:
-      - ./products-ms/postgres:/var/lib/postgresql/data
+      - products_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=administrador
       - POSTGRES_DB=productsms
       - POSTGRES_PASSWORD=admin123
+    networks:
+      - ferrCostos
 
   orders-db:
     container_name: "orders-base"
@@ -114,24 +129,13 @@ services:
       - "5433:5432"
     restart: always
     volumes:
-      - ./orders-ms/postgres:/var/lib/postgresql/data
+      - orders_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=administrador
       - POSTGRES_DB=ordersms
       - POSTGRES_PASSWORD=admin123
-
-  users-db:
-    container_name: "users-base"
-    image: postgres:16.3
-    ports:
-      - "5434:5432"
-    restart: always
-    volumes:
-      - ./users-ms/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=administrador
-      - POSTGRES_DB=usersms
-      - POSTGRES_PASSWORD=admin123
+    networks:
+      - ferrCostos
 
   auth-db:
     image: mongo
@@ -141,19 +145,32 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - ./auth-ms/mongo:/data/db
+      - auth_data:/data/db
+    networks:
+      - ferrCostos
 
   pgAdmin:
     depends_on:
-      - users-db
       - products-db
       - orders-db
     image: dpage/pgadmin4:8.6
+    restart: always
     volumes:
-      - ./pgadmin:/var/lib/pgadmin
+      - pgadmin_data:/var/lib/pgadmin
     ports:
       - "8080:80"
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@mysql.com
       - PGADMIN_DEFAULT_PASSWORD=admin123
-    restart: always
+    networks:
+      - ferrCostos
+
+volumes:
+  products_data:
+  orders_data:
+  auth_data:
+  pgadmin_data:
+
+networks:
+  ferrCostos:
+    driver: bridge
